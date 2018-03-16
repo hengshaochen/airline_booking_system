@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, request, session, redirect
 import bcrypt
+import pymysql
 from flaskext.mysql import MySQL
 #import MySQLdb
 
@@ -23,34 +24,71 @@ mysql.init_app(app)
 
 @app.route('/')
 def index():
+	if 'username' in session:
+		return render_template('dashboard.html')
+	return render_template('index.html')
 
-	cur = mysql.get_db().cursor()
-	cur.execute('''SELECT * FROM account''')
-	rv = cur.fetchall()
-	return str(rv)
+	#cur = mysql.get_db().cursor()
+	#cur.execute('''SELECT * FROM account''')
+	#rv = cur.fetchall()
+	#return str(rv)
 
 
 @app.route('/login', methods=['POST'])
 def login():
-    users = mongo.db.users
-    login_user = users.find_one({'name' : request.form['username']})
 
-    if login_user:
-    	# 如果user存在，驗證db中的password是否跟使用者輸入的相同
-        if bcrypt.hashpw(request.form['pass'].encode('utf-8'), login_user['password']) == login_user['password']:
-            session['username'] = request.form['username']
-            return redirect(url_for('index'))
+	db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com","Kocaine","12344321","airlines" )
+	cursor = db.cursor()
 
-    return 'Invalid username and password combination'
+	#sql = "select * from account where user="+request.form['username']+" AND password="+request.form['pass']+""
+    
+	try:
+		cursor.execute('''SELECT * from account where user = %s AND password = %s''', (request.form['username'], request.form['pass']))
+		results = cursor.fetchall()
+		if len(results) == 1:
+			return '登入成功'
+			session['username'] = request.form['username']
+		else:
+			return '登入失敗，請確認您的帳號或密碼是否正確'
+	except:
+		return 'Fail'
+
+    #if login_user:
+    #	# 如果user存在，驗證db中的password是否跟使用者輸入的相同
+    #    if bcrypt.hashpw(request.form['pass'].encode('utf-8'), login_user['password']) == login_user['password']:
+    #        session['username'] = request.form['username']
+    #        return redirect(url_for('index'))
+
+	return 'Invalid username and password combination'
 
 @app.route('/register', methods=['POST', 'GET'])
 def register():
+	db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com","Kocaine","12344321","airlines" )
 	if request.method == 'POST':
-		cursor = conn.cursor()
-	
-		cursor.execute("INSERT INTO user (user,password)VALUES(%s,%s)",(username,password))
-		conn.commit()
-		return redirect(url_for('index'))
+		cur = db.cursor()
+		#sql = "INSERT INTO account(user, password) VALUES (" + request.form['username'] + "," + request.form['pass'] + ")"
+		#sql = "INSERT INTO account(user, password) VALUES ("+request.args.get('user')+", "+request.args.get('password')+")"
+
+		#sql = "INSERT INTO account(user, password) VALUES ("+request.form['username']+", "+request.form['password']+")"
+		try:
+	        # 执行sql语句
+			#cur.execute(sql)
+			#hashpass = bcrypt.hashpw(request.form['pass'].encode('utf-8'), bcrypt.gensalt())
+
+			cur.execute('''INSERT into account (user, password)
+                  values (%s, %s)''',
+                  (request.form['username'], request.form['pass']))
+
+			session['username'] = request.form['username']
+			# 提交到数据库执行
+			db.commit()
+			#注册成功之后跳转到登录页面
+			return render_template('index.html')
+		except:
+			return 'Register Fail! Please try again.'
+
+	# if not POST, then it is GET
+	return render_template('register.html')
 
 
 if __name__ == '__main__':

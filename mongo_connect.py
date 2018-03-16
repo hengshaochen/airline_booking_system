@@ -31,16 +31,22 @@ def login():
 @app.route('/register', methods=['POST', 'GET'])
 def register():
 	if request.method == 'POST':
-		users = mongo.db.users
-		existing_user = users.find_one({'name' : request.form['username']})
 
-		if existing_user is None:
-			hashpass = bcrypt.hashpw(request.form['pass'].encode('utf-8'), bcrypt.gensalt())
-			users.insert({'name' : request.form['username'], 'password' : hashpass})
-			session['username'] = request.form['username']
-			return redirect(url_for('index'))
-
-		return 'That username already exists!'
+    	cursor = db.cursor()
+		sql = "INSERT INTO account(user, password) VALUES ("+request.form['username']+", "+request.form['password']+")"
+		try:
+	        # 执行sql语句
+	        cursor.execute(sql)
+	        # 提交到数据库执行
+	        db.commit()
+	         #注册成功之后跳转到登录页面
+			return redirect(url_for('login'))
+	    except:
+	        #抛出错误信息
+	        traceback.print_exc()
+	        # 如果发生错误则回滚
+	        db.rollback()
+	        return '注册失败'
 
 	# if not POST, then it is GET
 	return render_template('register.html')
