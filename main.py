@@ -16,8 +16,8 @@ app = Flask(__name__)
 mysql = MySQL()
 app.config['MYSQL_DATABASE_USER'] = 'Kocaine'
 app.config['MYSQL_DATABASE_PASSWORD'] = '12344321'
-app.config['MYSQL_DATABASE_DB'] = 'CS539_Proj'
-app.config['MYSQL_DATABASE_HOST'] = 'kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com:3306'
+app.config['MYSQL_DATABASE_DB'] = 'airlines'
+app.config['MYSQL_DATABASE_HOST'] = 'kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com'
 mysql.init_app(app)
 
 
@@ -25,7 +25,7 @@ mysql.init_app(app)
 def index():
 
 	cur = mysql.get_db().cursor()
-	cur.execute('''SELECT data FROM example WHERE id = 1''')
+	cur.execute('''SELECT * FROM account''')
 	rv = cur.fetchall()
 	return str(rv)
 
