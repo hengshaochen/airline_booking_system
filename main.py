@@ -2,6 +2,7 @@ from flask import Flask, render_template, url_for, request, session, redirect
 import bcrypt
 import pymysql
 from flaskext.mysql import MySQL
+import sys
 #import MySQLdb
 
 
@@ -25,7 +26,7 @@ mysql.init_app(app)
 @app.route('/')
 def index():
 	if 'username' in session:
-		return render_template('dashboard.html')
+		return render_template('dashboardUser.html')
 	return render_template('index.html')
 
 	#cur = mysql.get_db().cursor()
@@ -45,9 +46,20 @@ def login():
 	try:
 		cursor.execute('''SELECT * from account where user = %s AND password = %s''', (request.form['username'], request.form['pass']))
 		results = cursor.fetchall()
+		
 		if len(results) == 1:
-			return '登入成功'
 			session['username'] = request.form['username']
+			if results[0][2] == 1:
+				# admin
+				return "歡迎管理員，登入成功"
+			else:
+				# user
+				return render_template('dashboardUser.html')
+			#print('Hello world!', file=sys.stderr)
+			#print(results[0][2], file=sys.stderr)
+
+			#return render_template('dashboard.html', your_list=results[0][2])
+
 		else:
 			return '登入失敗，請確認您的帳號或密碼是否正確'
 	except:
@@ -79,7 +91,6 @@ def register():
                   values (%s, %s)''',
                   (request.form['username'], request.form['pass']))
 
-			session['username'] = request.form['username']
 			# 提交到数据库执行
 			db.commit()
 			#注册成功之后跳转到登录页面
