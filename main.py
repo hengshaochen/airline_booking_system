@@ -51,7 +51,7 @@ def login():
 			session['username'] = request.form['username']
 			if results[0][2] == 1:
 				# admin
-				return "歡迎管理員，登入成功"
+				return render_template('dashboardAdmin.html')
 			else:
 				# user
 				return render_template('dashboardUser.html')
