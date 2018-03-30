@@ -4,6 +4,7 @@ import pymysql
 from flaskext.mysql import MySQL
 import sys
 import datetime
+import json
 #import MySQLdb
 
 
@@ -66,10 +67,18 @@ def dashboardUser():
 			#	flightInfo.append(results[x][0])
 			print("testtest", file=sys.stderr)
 			flightTotalPrice = []
+			flightInfo_flightNumber = []
 			for x in range(0, len(flightInfo)):
 				flightTotalPrice.append(flightInfo[x][5] * int(numberTravelers))
+				flightInfo_flightNumber.append(flightInfo[x][0])
+			#print(flightTotalPrice, file=sys.stderr)
 
-			print(flightTotalPrice, file=sys.stderr)
+			print(type(DateTimeEncoder().encode(flightInfo[0][8])), file=sys.stderr)
+			print(DateTimeEncoder().encode(flightInfo[0][8]), file=sys.stderr)
+
+			session['flightInfo_flightNumber'] = flightInfo_flightNumber
+			session['numberTravelers'] = numberTravelers
+			session['flightTotalPrice'] = flightTotalPrice
 			return render_template('bookFlight.html', flightInfo=flightInfo, numberTravelers=numberTravelers, flightTotalPrice=flightTotalPrice)
 		except:
 			return 'Register Fail! Please try again.'
@@ -86,12 +95,37 @@ def bookFlight():
 	if request.method == 'POST':
 		try:
 			db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com","Kocaine","12344321","CS539_Proj" )
+			#cursor = db.cursor()
+
+			totalFlight = session.get('flightInfo_flightNumber', None)
+			selectFlight = int(request.form['selectFlight']) - 1
+			print("AAAA",file=sys.stderr)
+			print(type(totalFlight[selectFlight]), file=sys.stderr)
+			print(totalFlight[selectFlight], file=sys.stderr)
+			print("BBBBBB",file=sys.stderr)
+
 			cursor = db.cursor()
+			cursor.execute('''SELECT * FROM Schedule''')
+			rowcount = cursor.rowcount
+			#rowcount = cursor.fetchall()[0]
+			print("CCC",file=sys.stderr)
+			print(rowcount,file=sys.stderr)
+			print(type(rowcount), file=sys.stderr)
 
+			# 查db當前有幾筆資料已獲得下一筆訂單編號
+			cursor2 = db.cursor()
+			curson2.execute('''INSERT into Schedule (FlightNumber, ReservationNumber)
+                  values (%s, %d)''',
+                  ("totalFlight[selectFlight]", 1))
 
-			return render_template('bookFlight.html', flightInfo=flightInfo)
+			print("DDD",file=sys.stderr)
+			# 提交到数据库执行
+			db.commit()
+
+			# 把使用者選的編號的航班，訂票人數寫入Reservation
+			return render_template('/dashboardUser.html')
 		except:
-			return 'Register Fail! Please try again.'
+			return 'Book Fail! Please try again.'
 
 	# if not POST, then it is GET
 	return render_template('bookFlight.html')
@@ -162,6 +196,18 @@ def register():
 	# if not POST, then it is GET
 	return render_template('register.html')
 
+
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+        elif isinstance(obj, datetime.date):
+            return obj.isoformat()
+        elif isinstance(obj, datetime.timedelta):
+            return (datetime.datetime.min + obj).time().isoformat()
+        else:
+            return super(DateTimeEncoder, self).default(obj)
 
 if __name__ == '__main__':
 	app.secret_key = 'mysecret'
