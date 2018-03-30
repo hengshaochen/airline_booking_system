@@ -3,6 +3,7 @@ import bcrypt
 import pymysql
 from flaskext.mysql import MySQL
 import sys
+import datetime
 #import MySQLdb
 
 
@@ -15,12 +16,6 @@ app = Flask(__name__)
 
 #conn = MySQL.connect(host="henrychen0702.cqdz4l9ywfoh.us-east-2.rds.amazonaws.com:3306/airlines",user="henrychen0702",password="Abc794613",db="airlines")
 
-mysql = MySQL()
-app.config['MYSQL_DATABASE_USER'] = 'Kocaine'
-app.config['MYSQL_DATABASE_PASSWORD'] = '12344321'
-app.config['MYSQL_DATABASE_DB'] = 'airlines'
-app.config['MYSQL_DATABASE_HOST'] = 'kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com'
-mysql.init_app(app)
 
 
 @app.route('/')
@@ -33,6 +28,73 @@ def index():
 	#cur.execute('''SELECT * FROM account''')
 	#rv = cur.fetchall()
 	#return str(rv)
+
+@app.route('/dashboardUser', methods=['POST', 'GET'])
+def dashboardUser():
+
+	print('DASHBOARD TEST!', file=sys.stderr)
+	# POST
+	if request.method == 'POST':
+		try:
+			db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com","Kocaine","12344321","CS539_Proj" )
+			cursor = db.cursor()
+
+			# Get the weekday of the depart time
+			dt = request.form['depeartDate']
+			year, month, day = (int(x) for x in dt.split('-'))    
+			# Monday = 0 , Sunday = 6
+			weekday = datetime.date(year, month, day).weekday()
+			weekdayLikeSearch = "%" + str(weekday) + "%"
+
+			# check if there have enough seat
+			#request.form['numberTravelers'] +
+			numberTravelers = request.form['numberTravelers']
+			cursor.execute('''SELECT flightNumber from Remain where numberOfSeat - soldSeat > %s ''', (request.form['numberTravelers']))
+			availableFlight = cursor.fetchall()
+			print(availableFlight, file=sys.stderr)
+			#cursor.execute('''SELECT flightNumber from Remain where  ''')
+			cursor.execute('''SELECT * from Flight where origin = %s AND destination = %s AND WorkingDay LIKE %s AND flightNumber IN %s''', (request.form['from'], request.form['to'], weekdayLikeSearch, availableFlight))
+
+			flightInfo = cursor.fetchall()
+			#print(results, file=sys.stderr)
+			print(flightInfo, file=sys.stderr)
+			#flightInfo = results[0][0] + results[0][1]
+			#flightInfo = []
+			#for x in range(0, len(results)):
+			#	print(type(flightInfo))
+				#print(len(results))
+			#	flightInfo.append(results[x][0])
+			print("testtest", file=sys.stderr)
+			flightTotalPrice = []
+			for x in range(0, len(flightInfo)):
+				flightTotalPrice.append(flightInfo[x][5] * int(numberTravelers))
+
+			print(flightTotalPrice, file=sys.stderr)
+			return render_template('bookFlight.html', flightInfo=flightInfo, numberTravelers=numberTravelers, flightTotalPrice=flightTotalPrice)
+		except:
+			return 'Register Fail! Please try again.'
+
+	# if not POST, then it is GET
+	return render_template('dashboardUser.html')
+
+
+@app.route('/bookFlight', methods=['POST', 'GET'])
+def bookFlight():
+
+	print('bookFlight Test!', file=sys.stderr)
+	# POST
+	if request.method == 'POST':
+		try:
+			db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com","Kocaine","12344321","CS539_Proj" )
+			cursor = db.cursor()
+
+
+			return render_template('bookFlight.html', flightInfo=flightInfo)
+		except:
+			return 'Register Fail! Please try again.'
+
+	# if not POST, then it is GET
+	return render_template('bookFlight.html')
 
 
 @app.route('/login', methods=['POST'])
@@ -55,7 +117,6 @@ def login():
 			else:
 				# user
 				return render_template('dashboardUser.html')
-			#print('Hello world!', file=sys.stderr)
 			#print(results[0][2], file=sys.stderr)
 
 			#return render_template('dashboard.html', your_list=results[0][2])
