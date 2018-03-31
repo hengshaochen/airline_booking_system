@@ -104,23 +104,30 @@ def bookFlight():
 			print(totalFlight[selectFlight], file=sys.stderr)
 			print("BBBBBB",file=sys.stderr)
 
+			# insert field for reservation
 			cursor = db.cursor()
-			cursor.execute('''SELECT * FROM Schedule''')
-			rowcount = cursor.rowcount
-			#rowcount = cursor.fetchall()[0]
-			print("CCC",file=sys.stderr)
-			print(rowcount,file=sys.stderr)
-			print(type(rowcount), file=sys.stderr)
+			cursor.execute('''SELECT * FROM Reservation''')
+			reservationNumber = cursor.rowcount
 
+			Time = datetime.datetime.now()
+
+			Passengers = request.form['passengersName']
+			print("CCCC",file=sys.stderr)
+			print(Passengers, file=sys.stderr)
+			print("FFF",file=sys.stderr)
+			
+			cursor = db.cursor()
+			#cursor.execute('''INSERT into Reservation (ReservationNumber, Time, Passengers, Legs, FareRestrictions, BookFee, CustomerRepresentative) 
+			#	value(%d, %s, %s, %s, %s, %s, %s)''', (rowcount, 1))
 			# 查db當前有幾筆資料已獲得下一筆訂單編號
-			cursor2 = db.cursor()
-			curson2.execute('''INSERT into Schedule (FlightNumber, ReservationNumber)
-                  values (%s, %d)''',
-                  ("totalFlight[selectFlight]", 1))
+			#cursor2 = db.cursor()
+			#curson2.execute('''INSERT into Schedule (FlightNumber, ReservationNumber)
+            #      values (%s, %d)''',
+            #      ("totalFlight[selectFlight]", 1))
 
 			print("DDD",file=sys.stderr)
 			# 提交到数据库执行
-			db.commit()
+			#db.commit()
 
 			# 把使用者選的編號的航班，訂票人數寫入Reservation
 			return render_template('/dashboardUser.html')
