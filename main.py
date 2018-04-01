@@ -79,8 +79,8 @@ def dashboardUser():
 				flightDestin.append(flightInfo[x][7])
 			#print(flightTotalPrice, file=sys.stderr)
 
-			print(type(DateTimeEncoder().encode(flightInfo[0][8])), file=sys.stderr)
-			print(DateTimeEncoder().encode(flightInfo[0][8]), file=sys.stderr)
+			#print(type(DateTimeEncoder().encode(flightInfo[0][8])), file=sys.stderr)
+			#print(DateTimeEncoder().encode(flightInfo[0][8]), file=sys.stderr)
 
 			session['flightInfo_flightNumber'] = flightInfo_flightNumber
 			session['numberTravelers'] = numberTravelers
@@ -219,20 +219,23 @@ def person_info():
 
 		print(datetime.datetime.now())
 		try:
-			sql = "INSERT INTO Customer() Values(%d, '%s', '%s', '%s', '%s', '%s','%s', '%s', '%s', now(), '%s', '%s')" \
-				  %(AccountNumber+1,
-					request.form['LastName'],
-					request.form['FirstName'],
-					request.form['Address'],
-					request.form['City'],
-					request.form['State'],
-					request.form['Zipcode'],
-					request.form['Telephone'],
-					request.form['Email'],
-					request.form['CreditNumber'],
-					request.form['Preference'])
+
+
+			sql = '''UPDATE  Customer
+			        SET LastName = %s, FirstName = %s, 
+			        	Address = %s, City = %s,
+			        	State = %s, ZipCode = %s,
+			        	Telephone = %s, Email = %s,
+			        	AccountCreationTime = now(), CreditCardNumber = %s,
+			        	Preferences = %s
+			        WHERE AccountNumber = %s'''
+
+			#sql = '''UPDATE  Customer SET LastName = %s, FirstName = %s, Address = %s, City = %s, State = %s, ZipCode = %s, Telephone = %s, Email = %s, AccountCreationTime = now(), CreditCardNumber = %s, Preferences = %s WHERE AccountNumber = %s''' %(request.form['LastName'], request.form['FirstName'], request.form['LastName'], request.form['Address'], request.form['City'], request.form['State'], request.form['Zipcode'], request.form['Telephone'], request.form['Email'], request.form['CreditNumber'], request.form['Preference'], session.get('AccountNumber')	)
+
 			print(sql)
-			cur.execute(sql)
+			print(session.get('AccountNumber'))
+			cur.execute(sql, (request.form['LastName'], request.form['FirstName'], request.form['LastName'], request.form['Address'], request.form['City'], request.form['State'], request.form['Zipcode'], request.form['Telephone'], request.form['Email'], request.form['CreditNumber'], request.form['Preference'], session.get('AccountNumber') ))
+
 			print("INSERTION success!")
 			db.commit()
 			return render_template('index.html')
