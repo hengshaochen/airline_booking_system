@@ -52,26 +52,17 @@
     <section class="py-5">
       <div class="container">
         <article id="history">
-        <h1>Available Flight:</h1>
+        <h1>Order List:</h1>
 
-        {% for entry in flightInfo_list %}
-          <h5> {{loop.index}}. Flight Number:{{ entry.0 }} <br> {{entry.10}} Flight <br> Time:{{entry.8}} - {{entry.9}} <br> Fare:${{entry.5}} <br> Total Price: {{flightTotalPrice[loop.index - 1] }}</h5>
-          <br>
-        {% endfor %}
-        <h5> Flight Date: {{ticketDate}} <h5> <br><br>
+			{% for entry in order_history_table %}
+			  <h5> {{loop.index}}. Flight Number:{{ entry.0 }} <br>
+			    Time:{{ entry.1 }} <br> Passengers:{{ entry.2 }} <br> Legs:{{ entry.3 }} <br>
+			    FareRestrictions:{{ entry.4 }} <br> Book Fee:{{ entry.5 }} <br> CustomerRepresentative:{{ entry.6 }}
 
+			  </h5>
+			  <br>
+			{% endfor %}
 
-              <form method=POST action="{{ url_for('bookFlight') }}">
-                <div class="form-group">
-                  <label for="exampleInputEmail1">Please select flight by #:</label>
-                  <input type="text" class="form-control"  name="selectFlight"  placeholder="">
-                </div>
-                <div class="form-group">
-                  <label for="exampleInputEmail1">Customer Name:</label>
-                  <input type="text" class="form-control"  name="passengersName"  placeholder="Mike Chen">
-                </div>
-                <button type="submit" class="btn btn-primary mb-2">Place Order</button>
-              </form>
 
         </article>
       </div>

@@ -53,52 +53,50 @@ def dashboardUser():
 			# check if there have enough seat
 			#request.form['numberTravelers'] +
 			numberTravelers = request.form['numberTravelers']
-			cursor.execute('''SELECT flightNumber from Remain where numberOfSeat - soldSeat >= %s ''', (request.form['numberTravelers']))
+			cursor.execute('''SELECT flightNumber from Remain where numberOfSeat - soldSeat >= %s AND Date = %s''', (request.form['numberTravelers'], dt))
 			availableFlight = cursor.fetchall()
-			print(availableFlight, file=sys.stderr)
+			print("CDDCDCCDDCCDD")
+			print(availableFlight)
+			#print(availableFlight, file=sys.stderr)
 			#cursor.execute('''SELECT flightNumber from Remain where  ''')
-			cursor.execute('''SELECT * from Flight where origin = %s AND destination = %s AND WorkingDay LIKE %s AND flightNumber IN %s''', (request.form['from'], request.form['to'], weekdayLikeSearch, availableFlight))
-			flightInfo = cursor.fetchall()
+			if len(availableFlight) > 1:
+				cursor.execute('''SELECT * from Flight where origin = %s AND destination = %s AND WorkingDay LIKE %s AND flightNumber IN %s''', (request.form['from'], request.form['to'], weekdayLikeSearch, availableFlight))
+				flightInfo = cursor.fetchall()
+			else:
+				flightInfo = []
+				ticketDate = datetime.date(year, month, day)
 
-			print("ASCSCSCSCCS")
-			print(type(flightInfo[0]))
-			print(type(list(flightInfo[0])))
+			print("~~~")
+			if len(flightInfo) < 1:
+				print("@@@@@")
+				# 模糊查詢
+				print( vagueSearch('JFK', 'TPE', datetime.date(2019, 1, 1), 1) )
+				print("VAGUEVAGUE")
+
+				flightInfo, ticketDate = vagueSearch(request.form['from'], request.form['to'], datetime.date(year, month, day), 1)
+				print(flightInfo)
+
+
+			# 通用執行
 			flightInfo_list = []
 			for x in range(len(flightInfo)):
 				flightInfo_list.append(list(flightInfo[x]))
 
-			print("21212222")
-			# flightInfo_list = list(flightInfo)
-
-			#print(flightInfo_list[0])
 			for x in range(0, len(flightInfo_list)):
 				flightInfo_list[x].append(isDomesticTrip(flightInfo[x][6], flightInfo[x][7]))
 
-			print("3333")
-			#print(results, file=sys.stderr)
-			print(flightInfo_list, file=sys.stderr)
-			#flightInfo = results[0][0] + results[0][1]
-			#flightInfo = []
-			#for x in range(0, len(results)):
-			#	print(type(flightInfo))
-				#print(len(results))
-			#	flightInfo.append(results[x][0])
-			print("testtest", file=sys.stderr)
 			flightTotalPrice = []
 			flightInfo_flightNumber = []
 			flightDepart = []
 			flightDestin = []
 			isDomestic = []
+
 			for x in range(0, len(flightInfo)):
 				flightTotalPrice.append(flightInfo[x][5] * int(numberTravelers) * discount_ratio)
 				flightInfo_flightNumber.append(flightInfo[x][0])
 				flightDepart.append(flightInfo[x][6])
 				flightDestin.append(flightInfo[x][7])
 				isDomestic.append(isDomesticTrip(flightInfo[x][6], flightInfo[x][7]))
-			#print(flightTotalPrice, file=sys.stderr)
-
-			#print(type(DateTimeEncoder().encode(flightInfo[0][8])), file=sys.stderr)
-			#print(DateTimeEncoder().encode(flightInfo[0][8]), file=sys.stderr)
 
 			session['flightInfo_flightNumber'] = flightInfo_flightNumber
 			session['numberTravelers'] = numberTravelers
@@ -106,7 +104,8 @@ def dashboardUser():
 			session['flightDepart'] = flightDepart
 			session['flightDestin'] = flightDestin
 			session['dt'] = DateTimeEncoder().encode(dt)
-			return render_template('bookFlight.html', flightInfo=flightInfo, numberTravelers=numberTravelers, flightTotalPrice=flightTotalPrice, isDomestic=isDomestic, flightInfo_list=flightInfo_list)
+			return render_template('bookFlight.html', flightInfo=flightInfo, numberTravelers=numberTravelers, flightTotalPrice=flightTotalPrice, isDomestic=isDomestic, flightInfo_list=flightInfo_list, ticketDate=ticketDate)
+
 		except:
 			return 'Register Fail! Please try again.'
 
@@ -205,11 +204,16 @@ def bookFlight():
 			print("success")
 
 			# 查db當前有幾筆資料已獲得下一筆訂單編號
-			#cursor2 = db.cursor()
-			#curson2.execute('''INSERT into Schedule (FlightNumber, ReservationNumber)
-            #      values (%s, %d)''',
-            #      ("totalFlight[selectFlight]", 1))
+			cursor2 = db.cursor()
 
+			Schedule_insert = "insert into Schedule values('%s', %d, '%s')" % ( totalFlight[selectFlight], reservationNumber + 1, remains["Date"][1:11] )
+
+			cursor2.execute(Schedule_insert)
+			#curson2.execute('''INSERT into Schedule (FlightNumber, ReservationNumber, FlightDate)
+            #      values ('%s', %d, %s)''',
+            #      ("totalFlight[selectFlight]", 1, remains["Date"]))
+
+			print("XXXX")
 			# 提交到数据库执行
 			db.commit()
 
@@ -327,6 +331,29 @@ def reservation_history_just_one():
 	return render_template('person_info.html')
 
 
+@app.route('/order_query_past',methods = ['POST', 'GET'])
+def order_query_past():
+	if request.method == 'POST':
+		AccountNumber = session.get('AccountNumber')
+		order_history_table = reservation_timestamp_past(AccountNumber, False)
+		try:
+			return render_template('order_history.html',order_history_table = order_history_table)
+		except:
+			return "Query history failed, please try again."
+	return render_template('person_info.html')
+
+@app.route('/order_query_future',methods = ['POST', 'GET'])
+def order_query_future():
+	if request.method == 'POST':
+		AccountNumber = session.get('AccountNumber')
+		order_history_table = reservation_timestamp_past(AccountNumber, True)
+		try:
+			return render_template('order_history.html',order_history_table = order_history_table)
+		except:
+			return "Query history failed, please try again."
+	return render_template('person_info.html')
+
+
 @app.route('/login', methods=['POST'])
 def login():
 
@@ -429,6 +456,97 @@ def isDomesticTrip(__from__, __to__):
     if country_from == country_to:
         return "Domestic"
     return "International"
+
+def vagueSearch(__from__, __to__, __date__, __number__):
+    """
+    when the specific day is all sold out, use this to vague search
+    :param __from__: string
+    :param __to__: string
+    :param __date__: string '2018-03-31'
+    :param __number__: int
+    :return: result set
+    """
+
+    # define time duration
+    oneday = datetime.timedelta(days=1)
+    __date__ += oneday
+    db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com", "Kocaine", "12344321", "CS539_Proj")
+    cur = db.cursor()
+    while True:
+        # Monday = 0 , Sunday = 6
+        weekday = __date__.weekday()
+        weekdayLikeSearch = "%" + str(weekday) + "%"
+
+        sql = "select FlightNumber, NumberOfSeat from Flight where origin='%s' and destination='%s' and WorkingDay like '%s'"%(__from__, __to__, weekdayLikeSearch)
+        sql_result = "select * from Flight where origin='%s' and destination='%s' and WorkingDay like '%s'"%(__from__, __to__, weekdayLikeSearch)
+
+        cur.execute(sql)
+        flightInfo = cur.fetchall()
+
+        cur.execute(sql_result)
+        flightResult = cur.fetchall()
+        print(flightInfo)
+        if 0 == len(flightInfo):
+            __date__ = __date__ + oneday
+            continue
+
+        for i in range(len(flightInfo)):
+            sql = "select * from Remain where FlightNumber='%s' and Date='%s';"%(flightInfo[i][0], __date__)
+            cur.execute(sql)
+            res = cur.fetchall()
+
+            if 0 == len(res):
+                sql = "insert into Remain values('%s', '%s', %d, %d);"%(flightInfo[i][0], __date__, 0, flightInfo[i][1])
+                cur.execute(sql)
+                db.commit()
+
+        return flightResult, __date__
+
+
+
+def reservation_timestamp_past(account, past_future):
+    """
+    when the specific day is all sold out, use this to vague search
+    :param __date__: string '2018-03-31' or '2018-03-31 11:11:11'
+    :param _account_: int
+    :return: result set
+    """
+    db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com", "Kocaine", "12344321", "CS539_Proj")
+    cur = db.cursor()
+    # _start_ += " 00:00:00"
+    # _end_ += "23:59:59"
+
+    reserv_in_make_sql = "SELECT ReservationNumber FROM Makes WHERE AccountNumber=%d" % account
+    print("select in Make")
+    print(reserv_in_make_sql)
+    cur.execute(reserv_in_make_sql)
+    reserv_num = cur.fetchall()
+    print(reserv_num)
+
+    if past_future == True:
+    	# Future
+    	reserve_in_reserv_sql = "SELECT ReservationNumber FROM Schedule " \
+          	"WHERE ReservationNumber IN (%s) AND " \
+          	"timediff(now(), timestamp(FlightDate)) < 0 " % reserv_in_make_sql
+    else:
+    	# Past
+    	reserve_in_reserv_sql = "SELECT ReservationNumber FROM Schedule " \
+          	"WHERE ReservationNumber IN (%s) AND " \
+          	"timediff(now(), timestamp(FlightDate)) > 0 " % reserv_in_make_sql
+
+    print("select in ReservationNumber")
+    print(reserve_in_reserv_sql)
+    cur.execute(reserve_in_reserv_sql)
+    print(cur.fetchall())
+    #reserv_num = cur.fetchall()
+
+
+    sql = "SELECT * FROM Reservation WHERE ReservationNumber IN (%s)" % reserve_in_reserv_sql
+    print("select in Reservation table")
+    print(sql)
+    cur.execute(sql)
+    reserv_past = cur.fetchall()
+    return reserv_past
 
 
 class DateTimeEncoder(json.JSONEncoder):
