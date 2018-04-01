@@ -58,10 +58,25 @@ def dashboardUser():
 			print(availableFlight, file=sys.stderr)
 			#cursor.execute('''SELECT flightNumber from Remain where  ''')
 			cursor.execute('''SELECT * from Flight where origin = %s AND destination = %s AND WorkingDay LIKE %s AND flightNumber IN %s''', (request.form['from'], request.form['to'], weekdayLikeSearch, availableFlight))
-
 			flightInfo = cursor.fetchall()
+
+			print("ASCSCSCSCCS")
+			print(type(flightInfo[0]))
+			print(type(list(flightInfo[0])))
+			flightInfo_list = []
+			for x in range(len(flightInfo)):
+				flightInfo_list.append(list(flightInfo[x]))
+
+			print("21212222")
+			# flightInfo_list = list(flightInfo)
+
+			#print(flightInfo_list[0])
+			for x in range(0, len(flightInfo_list)):
+				flightInfo_list[x].append(isDomesticTrip(flightInfo[x][6], flightInfo[x][7]))
+
+			print("3333")
 			#print(results, file=sys.stderr)
-			print(flightInfo, file=sys.stderr)
+			print(flightInfo_list, file=sys.stderr)
 			#flightInfo = results[0][0] + results[0][1]
 			#flightInfo = []
 			#for x in range(0, len(results)):
@@ -73,11 +88,13 @@ def dashboardUser():
 			flightInfo_flightNumber = []
 			flightDepart = []
 			flightDestin = []
+			isDomestic = []
 			for x in range(0, len(flightInfo)):
 				flightTotalPrice.append(flightInfo[x][5] * int(numberTravelers) * discount_ratio)
 				flightInfo_flightNumber.append(flightInfo[x][0])
 				flightDepart.append(flightInfo[x][6])
 				flightDestin.append(flightInfo[x][7])
+				isDomestic.append(isDomesticTrip(flightInfo[x][6], flightInfo[x][7]))
 			#print(flightTotalPrice, file=sys.stderr)
 
 			#print(type(DateTimeEncoder().encode(flightInfo[0][8])), file=sys.stderr)
@@ -89,7 +106,7 @@ def dashboardUser():
 			session['flightDepart'] = flightDepart
 			session['flightDestin'] = flightDestin
 			session['dt'] = DateTimeEncoder().encode(dt)
-			return render_template('bookFlight.html', flightInfo=flightInfo, numberTravelers=numberTravelers, flightTotalPrice=flightTotalPrice)
+			return render_template('bookFlight.html', flightInfo=flightInfo, numberTravelers=numberTravelers, flightTotalPrice=flightTotalPrice, isDomestic=isDomestic, flightInfo_list=flightInfo_list)
 		except:
 			return 'Register Fail! Please try again.'
 
@@ -391,6 +408,28 @@ def cal_discount(date1, date2):
 		return 0.9
 	else:
 		return 1.0
+
+
+def isDomesticTrip(__from__, __to__):
+    """
+    use to know whether a flight is domestic or not
+    :param __from__: string
+    :param __to__: string
+    :return: boolean
+    """
+    db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com", "Kocaine", "12344321", "CS539_Proj")
+    cur = db.cursor()
+    sql_from = "select Country from Airport where AirportID='%s'"%(__from__)
+    cur.execute(sql_from)
+    country_from = cur.fetchall()
+    sql_to = "select Country from Airport where AirportID='%s'"%(__to__)
+    cur.execute(sql_to)
+    country_to = cur.fetchall()
+
+    if country_from == country_to:
+        return "Domestic"
+    return "International"
+
 
 class DateTimeEncoder(json.JSONEncoder):
     def default(self, obj):

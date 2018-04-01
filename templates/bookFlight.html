@@ -54,10 +54,11 @@
         <article id="history">
         <h1>Available Flight:</h1>
 
-        {% for entry in flightInfo %}
-          <h5> {{loop.index}}. Flight Number:{{ entry.0 }} Time:{{entry.8}} - {{entry.9}} Fare:${{entry.5}} Total Price: {{flightTotalPrice[loop.index - 1] }}</h5>
-          <br>
+        {% for entry in flightInfo_list %}
+          <h5> {{loop.index}}. Flight Number:{{ entry.0 }} <br> {{entry.10}} Flight <br> Time:{{entry.8}} - {{entry.9}} <br> Fare:${{entry.5}} <br> Total Price: {{flightTotalPrice[loop.index - 1] }}</h5>
+          <br><br>
         {% endfor %}
+
 
               <form method=POST action="{{ url_for('bookFlight') }}">
                 <div class="form-group">
