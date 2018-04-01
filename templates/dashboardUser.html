@@ -22,7 +22,7 @@
               <a class="nav-link" href="#search">Book Flight</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#history">Flight history page</a>
+              <a class="nav-link" href="#history">Reservation history page</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#accountPage">My account page</a>
@@ -83,9 +83,36 @@
                 </div>
                 <button type="submit" class="btn btn-primary mb-2">Search</button>
 
-                <h1>Hello {{ flightInfo }}!</h1>
               </form>
               </article>
+          </div>
+        </div>
+
+    </section>
+
+
+    <!-- account Page Content -->
+    <section class="py-5">
+
+    <div class="container">
+      <article id="history">
+      <h1>Reservation History</h1>
+      <div class="card-group">
+
+        <div class="card">
+          <img class="card-img-top" src="https://image.flaticon.com/icons/svg/761/761484.svg" alt="Card image cap" width="244" height="180">
+          <div class="card-body">
+            <form method=POST action="{{ url_for('reservation_history') }}">
+                        <button type="submit" class="btn btn-primary btn-block">Query All</button>
+            </form>
+            <form method=POST action="{{ url_for('reservation_history_just_one') }}">
+              <br>
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Reservation Number:</label>
+                  <input type="number" class="form-control" name="queryReservationNumber">
+                </div>
+                        <button type="submit" class="btn btn-primary btn-block">Query By Reservation Number</button>
+            </form>
           </div>
         </div>
 
@@ -96,7 +123,7 @@
 
     <div class="container">
       <article id="accountPage">
-      <h1>Book Flight</h1>
+      <h1>Account Page</h1>
       <div class="card-group">
 
         <div class="card">
@@ -160,17 +187,7 @@
 
     </section>
 
-    <!-- Flight history Content -->
-    <section class="py-5">
-      <div class="container">
-        <article id="history">
-        <h1>Flight history data:</h1>
-        <p>The background images for the slider are set directly in the HTML using inline CSS. The rest of the styles for this template are contained within the
-          <code>half-slider.css</code>
-          file.</p>
-        </article>
-      </div>
-    </section>
+
 
     <!-- Footer -->
     <footer class="py-5 bg-dark">

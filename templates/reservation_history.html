@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block body %}
+
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">Airline ticket booking system</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Home
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#search">Book Flight</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#history">Flight history page</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">My account page</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <header>
+      <div id="carouselExampleSlidesOnly" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner" role="listbox">
+
+          <!-- Slide One - Set the background image for this slide in the line below -->
+          <div class="carousel-item active" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/d/d9/B-18203_-_747-409_-_China_Airlines_-_BNE_%2812433607124%29.jpg')">
+            <div class="carousel-caption d-none d-md-block">
+              <h3>Welcome to Airline ticket booking system.</h3>
+              <p>Please select function</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Flight history Content -->
+    <section class="py-5">
+      <div class="container">
+        <article id="history">
+        <h1>Reservation History:</h1>
+
+        {% for entry in reservationQuery %}
+          <h5> {{loop.index}}. Flight Number:{{ entry.0 }} <br>
+            Time:{{ entry.1 }} <br> Passengers:{{ entry.2 }} <br> Legs:{{ entry.3 }} <br>
+            FareRestrictions:{{ entry.4 }} <br> Book Fee:{{ entry.5 }} <br> CustomerRepresentative:{{ entry.6 }}
+
+          </h5>
+          <br>
+        {% endfor %}
+
+        </article>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-5 bg-dark">
+      <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Your Website 2018</p>
+      </div>
+      <!-- /.container -->
+    </footer>
+
+  </body>
+
+
+{% endblock %}

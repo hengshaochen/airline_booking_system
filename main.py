@@ -44,7 +44,8 @@ def dashboardUser():
 			# Get the weekday of the depart time
 			dt = request.form['depeartDate']
 			print(dt)
-			year, month, day = (int(x) for x in dt.split('-')) 
+			year, month, day = (int(x) for x in dt.split('-'))
+			discount_ratio = cal_discount(datetime.date(year,month, day),datetime.date.today())
 			# Monday = 0 , Sunday = 6
 			weekday = datetime.date(year, month, day).weekday()
 			weekdayLikeSearch = "%" + str(weekday) + "%"
@@ -73,7 +74,7 @@ def dashboardUser():
 			flightDepart = []
 			flightDestin = []
 			for x in range(0, len(flightInfo)):
-				flightTotalPrice.append(flightInfo[x][5] * int(numberTravelers))
+				flightTotalPrice.append(flightInfo[x][5] * int(numberTravelers) * discount_ratio)
 				flightInfo_flightNumber.append(flightInfo[x][0])
 				flightDepart.append(flightInfo[x][6])
 				flightDestin.append(flightInfo[x][7])
@@ -221,14 +222,15 @@ def person_info():
 		try:
 
 
-			sql = '''UPDATE  Customer
-			        SET LastName = %s, FirstName = %s, 
-			        	Address = %s, City = %s,
-			        	State = %s, ZipCode = %s,
-			        	Telephone = %s, Email = %s,
-			        	AccountCreationTime = now(), CreditCardNumber = %s,
-			        	Preferences = %s
-			        WHERE AccountNumber = %s'''
+
+			sql = "UPDATE  Customer SET LastName = '%s', FirstName = '%s', Address = '%s', " \
+				  "City = '%s', State = '%s', ZipCode = '%s' ,Telephone = '%s', Email = '%s', AccountCreationTime = now(), " \
+				  "CreditCardNumber = '%s', Preferences = '%s' WHERE AccountNumber = '%s'" %(request.form['LastName'], request.form['FirstName'],
+																					   request.form['Address'], request.form['City'],
+																					   request.form['State'],
+																					   request.form['Zipcode'], request.form['Telephone'],
+																					   request.form['Email'], request.form['CreditNumber'],
+																					   request.form['Preference'], session.get('AccountNumber') )
 
 			#sql = '''UPDATE  Customer SET LastName = %s, FirstName = %s, Address = %s, City = %s, State = %s, ZipCode = %s, Telephone = %s, Email = %s, AccountCreationTime = now(), CreditCardNumber = %s, Preferences = %s WHERE AccountNumber = %s''' %(request.form['LastName'], request.form['FirstName'], request.form['LastName'], request.form['Address'], request.form['City'], request.form['State'], request.form['Zipcode'], request.form['Telephone'], request.form['Email'], request.form['CreditNumber'], request.form['Preference'], session.get('AccountNumber')	)
 
@@ -241,6 +243,70 @@ def person_info():
 			return render_template('index.html')
 		except:
 			return 'Customer Information Update Fail! Please try again.'
+	return render_template('person_info.html')
+
+
+@app.route('/reservation_history', methods = ['POST','GET'])
+def reservation_history():
+	db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com","Kocaine","12344321","CS539_Proj" )
+	if request.method == 'POST':
+		cur = db.cursor()
+		sql_1 = "select ReservationNumber from Makes where AccountNumber=%d"%(session.get('AccountNumber'))
+		# cur.execute('''SELECT ReservationNumber FROM Makes WHERE AccountNumber = %s''', (session.get('AccountNumber')))
+		# makesSQL = ('''SELECT ReservationNumber FROM Makes WHERE AccountNumber = %s''', (session.get('AccountNumber')))
+		#MakesSQL = cur.fetchall()
+		cur.execute(sql_1)
+		aa = cur.fetchall();
+		print(aa)
+		sql_2 = "select * from Reservation where ReservationNumber in (%s)"%(sql_1)
+		#sql_2_result = cur.fetchall()
+		#sql_3 = "select * from (%s) where ReservationNumber = (%s)" % (sql_2_result,)
+		# cur.execute('''SELECT * FROM Reservation WHERE ReservationNumber IN (%s)''', sql_1)
+		cur.execute(sql_2)
+		reservationQuery = cur.fetchall()
+		print(reservationQuery)
+		print("Test")
+
+		try:
+
+			return render_template('reservation_history.html', reservationQuery=reservationQuery)
+		except:
+			return 'Query Fail! Please try again.'
+	return render_template('person_info.html')
+
+
+@app.route('/reservation_history_just_one', methods = ['POST','GET'])
+def reservation_history_just_one():
+	db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com","Kocaine","12344321","CS539_Proj" )
+	if request.method == 'POST':
+		cur = db.cursor()
+		sql_1 = "select ReservationNumber from Makes where AccountNumber=%d"%(session.get('AccountNumber'))
+		# cur.execute('''SELECT ReservationNumber FROM Makes WHERE AccountNumber = %s''', (session.get('AccountNumber')))
+		# makesSQL = ('''SELECT ReservationNumber FROM Makes WHERE AccountNumber = %s''', (session.get('AccountNumber')))
+		#MakesSQL = cur.fetchall()
+		cur.execute(sql_1)
+
+		#session['queryReservationNumber'] = request.form['queryReservationNumber']
+		aa = cur.fetchall();
+		print("OOOOOOOOOOO")
+		print(request.form['queryReservationNumber'])
+		sql_2 = "select * from Reservation where ReservationNumber in (%s) and ReservationNumber = %d"%(sql_1, int(request.form['queryReservationNumber']))
+		cur.execute(sql_2)
+		one_result = cur.fetchall()
+		print("XXXXSXSXS")
+		print(one_result)
+		#sql_3 = "select * from (%s) where ReservationNumber = (%s)" % (sql_2_result,)
+		# cur.execute('''SELECT * FROM Reservation WHERE ReservationNumber IN (%s)''', sql_1)
+		#cur.execute(sql_2)
+		#reservationQuery = cur.fetchall()
+		#print(reservationQuery)
+		print("Test")
+
+		try:
+
+			return render_template('reservation_history_just_one.html', one_result=one_result)
+		except:
+			return 'Query Fail! Please try again.'
 	return render_template('person_info.html')
 
 
@@ -312,6 +378,19 @@ def register():
    # if not POST, then it is GET
    return render_template('register.html')
 
+
+def cal_discount(date1, date2):
+	print("Enter the func")
+	days = abs((date2-date1).days)
+	print(days)
+	if days - 21 >= 0:
+		return 0.7
+	elif days -14 >= 0:
+		return 0.8
+	elif days - 7 >= 0:
+		return 0.9
+	else:
+		return 1.0
 
 class DateTimeEncoder(json.JSONEncoder):
     def default(self, obj):
