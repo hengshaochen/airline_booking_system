@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block body %}
+
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">Airline ticket booking system</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Home
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#search">Manage Database</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#history">Modify Flight information</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Send information to passenger</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <header>
+      <div id="carouselExampleSlidesOnly" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner" role="listbox">
+
+          <!-- Slide One - Set the background image for this slide in the line below -->
+          <div class="carousel-item active" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/d/d9/B-18203_-_747-409_-_China_Airlines_-_BNE_%2812433607124%29.jpg')">
+            <div class="carousel-caption d-none d-md-block">
+              <h3>Welcome to Airline ticket booking system.</h3>
+              <p>Admin Mode</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search Content -->
+
+    <section class="py-5">
+        <div class="container">
+          <article id="search4">
+          <h1>Reservations</h1>
+          <div class="card-group">
+              <div class="card">
+                  <img class="card-img-top" src="https://image.flaticon.com/icons/svg/761/761484.svg" alt="Card image cap" width="244" height="180">
+                  <div class="card-body">
+
+                          <form method=POST action="{{ url_for('d4') }}">
+                          <table border="0">
+                            <tr>
+                            <td>
+                            <label >Flight Number:</label>
+                                <!--<form method=POST action="{{ url_for('dashboardAdmin4') }}">-->
+                                     <input type="text" class="form-control"  name="flight_num2"  placeholder="AA009">
+                                    <button type="submit" name="flight_num3" class="btn btn-primary mb-2">Search</button>
+                                <!--</form>-->
+                            </td>
+                            <td>
+                            <label >Customer Name:</label>
+
+                            <!--<form method=POST action="{{ url_for('dashboardAdmin4') }}">-->
+                                 <input type="text" class="form-control"  name="cust_name3"  placeholder="Mou Arlen">
+                                <button type="submit" name="cust_name4" class="btn btn-primary mb-2">Search</button>
+                            <!--</form>-->
+                            </td>
+                            </tr>
+                            <tr>
+                            <td>
+
+                            </td>
+                            <td>
+
+                            </td>
+                            </tr>
+                          </table>
+
+                              {% for entry in res_num %}
+                              <h5> {{loop.index}}. Reservation Number:{{ entry.0 }} Flight Number:{{ entry.1}} First Name:{{ entry.3}} Last Name:{{ entry.2}}</h5>
+                              <br>
+                              {% endfor %}
+
+                          </form>
+
+                      <!--</form>-->
+                  </div>
+              </div>
+          </div>
+          </article>
+        </div>
+    </section>
+
+{% endblock %}

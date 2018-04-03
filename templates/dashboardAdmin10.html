@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+{% block body %}
+
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">Airline ticket booking system</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Home
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#search">Manage Database</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#history">Modify Flight information</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Send information to passenger</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <header>
+      <div id="carouselExampleSlidesOnly" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner" role="listbox">
+
+          <!-- Slide One - Set the background image for this slide in the line below -->
+          <div class="carousel-item active" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/d/d9/B-18203_-_747-409_-_China_Airlines_-_BNE_%2812433607124%29.jpg')">
+            <div class="carousel-caption d-none d-md-block">
+              <h3>Welcome to Airline ticket booking system.</h3>
+              <p>Admin Mode</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search Content -->
+
+
+    <section class="py-5">
+        <div class="container">
+          <article id="search10">
+          <h1>Ontime and delayed flights</h1>
+          <div class="card-group">
+              <div class="card">
+                  <img class="card-img-top" src="https://image.flaticon.com/icons/svg/761/761484.svg" alt="Card image cap" width="244" height="180">
+                  <div class="card-body">
+                      <form method=POST action="{{ url_for('d10') }}">
+                        <button type="submit" name="b1" class="btn btn-primary mb-2">Generate</button>
+                        <br>
+                        Delayed:
+                        {% for entry in delayed_list %}
+                          <h5> {{loop.index}}. Flight Number:{{ entry.0 }} Airport ID:{{ entry.1 }} Arrive Time:{{ entry.2 }} Depart Time::{{ entry.3 }}</h5>
+                          <br>
+                        {% endfor %}
+                        Ontime:
+                        {% for entry in ontime_list %}
+                          <h5> {{loop.index}}. Flight Number:{{ entry.0 }} Airport ID:{{ entry.1 }} Arrive Time:{{ entry.2 }} Depart Time::{{ entry.3 }}</h5>
+                          <br>
+                        {% endfor %}
+                      </form>
+                  </div>
+              </div>
+          </div>
+          </article>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="py-5 bg-dark">
+      <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Your Website 2018</p>
+      </div>
+      <!-- /.container -->
+    </footer>
+
+  </body>
+
+
+{% endblock %}

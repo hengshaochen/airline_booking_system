@@ -27,6 +27,13 @@
             <li class="nav-item">
               <a class="nav-link" href="#accountPage">My account page</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#findBest">Find Best Seller</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href=" {{ url_for('logout') }}" style="color:red">Log out</a >
+            </li>
           </ul>
         </div>
       </div>
@@ -60,7 +67,38 @@
           <img class="card-img-top" src="https://image.flaticon.com/icons/svg/761/761484.svg" alt="Card image cap" width="244" height="180">
           <div class="card-body">
               <article id="search2">
+              <h4> One way </h4>
               <form method=POST action="{{ url_for('dashboardUser') }}">
+                <div class="form-group">
+                  <label for="exampleInputEmail1">From:</label>
+                  <input type="text" class="form-control"  name="from"  placeholder="Taipei: TPE">
+                </div>
+                <div class="form-group">
+                  <label for="exampleInputEmail1">To:</label>
+                  <input type="text" class="form-control"  name="to"  placeholder="New York: JFK">
+                </div>
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Departing:</label>
+                  <input type="date" class="form-control"  name="depeartDate"  placeholder="1979-12-31">
+                </div>
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Travelers:</label>
+                  <input type="number" class="form-control" name="numberTravelers" min="1" max="10">
+                </div>
+                <button type="submit" class="btn btn-primary mb-2">Search</button>
+
+              </form>
+              </article>
+          </div>
+        </div>
+
+
+        <div class="card">
+          <img class="card-img-top" src="https://image.flaticon.com/icons/svg/761/761484.svg" alt="Card image cap" width="244" height="180">
+          <div class="card-body">
+              <article id="search2">
+              <h4> Round Trip </h4>
+              <form method=POST action="{{ url_for('dashboardUser_roundTrip') }}">
                 <div class="form-group">
                   <label for="exampleInputEmail1">From:</label>
                   <input type="text" class="form-control"  name="from"  placeholder="Taipei: TPE">
@@ -192,12 +230,51 @@
 
                         <button type="submit" class="btn btn-primary btn-block">Submit</button>
                 </form>
+
+              <form method=POST action="{{ url_for('modifyPassword') }}">
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Password:</label>
+                  <input type="text" class="form-control"  name="newPassword"  placeholder="Enter New Password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Modify Password</button>
+
+              </form>
           </div>
         </div>
 
     </section>
 
+    <section class="py-5">
 
+    <div class="container">
+      <article id="findBest">
+      <h1>Search Best</h1>
+      <div class="card-group">
+
+        <div class="card">
+          <img class="card-img-top" src="https://image.flaticon.com/icons/svg/761/761484.svg" alt="Card image cap" width="244" height="180">
+          <div class="card-body">
+
+
+
+            <form method=POST action="{{ url_for('find_best') }}">
+              <div class="form-group">
+                <label for="exampleInputEmail1">Show your date</label>
+              <input type="date" class="form-control"  name="best_date"  placeholder="1979-12-31">
+              </div>
+              <button type="submit" class="btn btn-primary mb-2">Search Best Flight</button>
+            </form>
+            <form method=POST action="{{ url_for('find_least') }}">
+              <div class="form-group">
+                <label for="exampleInputEmail1">Show your date</label>
+              <input type="date" class="form-control"  name="least_date"  placeholder="1979-12-31">
+              </div>
+              <button type="submit" class="btn btn-primary mb-2">Search Least Flight</button>
+            </form>
+          </div>
+        </div>
+
+    </section>
 
     <!-- Footer -->
     <footer class="py-5 bg-dark">
