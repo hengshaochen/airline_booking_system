@@ -55,7 +55,7 @@
         <h1>Order List:</h1>
 
 			{% for entry in order_history_table %}
-			  <h5> {{loop.index}}. Flight Number:{{ entry.0 }} <br>
+			  <h5> {{loop.index}}. Reservation Number:{{ entry.0 }} <br>
 			    Time:{{ entry.1 }} <br> Passengers:{{ entry.2 }} <br> Legs:{{ entry.3 }} <br>
 			    FareRestrictions:{{ entry.4 }} <br> Book Fee:{{ entry.5 }} <br> CustomerRepresentative:{{ entry.6 }}
 

@@ -63,6 +63,10 @@ def dashboardUser():
 			if len(availableFlight) >= 1:
 				cursor.execute('''SELECT * from Flight where origin = %s AND destination = %s AND WorkingDay LIKE %s AND flightNumber IN %s''', (request.form['from'], request.form['to'], weekdayLikeSearch, availableFlight))
 				flightInfo = cursor.fetchall()
+				if len(flightInfo) == 0:
+					flightInfo = transferFlight(request.form['from'], request.form['to'])
+					print(flightInfo)
+
 			else:
 				#cursor.execute('''SELECT flightNumber from Remain where numberOfSeat - soldSeat >= %s AND FlightNumber = %s''', (request.form['numberTravelers'], ))
 				#fullOrContains = cursor.fetchall()
@@ -532,7 +536,7 @@ def person_info():
 	if request.method == 'POST':
 		cur = db.cursor()
 		cur.execute('''SELECT * FROM Customer''')
-		AccountNumber = cur.rowcount
+		AccountNumber = session.get('AccountNumber')
 		print(AccountNumber)
 
 		for item in request.form:
@@ -555,13 +559,13 @@ def person_info():
 			#sql = '''UPDATE  Customer SET LastName = %s, FirstName = %s, Address = %s, City = %s, State = %s, ZipCode = %s, Telephone = %s, Email = %s, AccountCreationTime = now(), CreditCardNumber = %s, Preferences = %s WHERE AccountNumber = %s''' %(request.form['LastName'], request.form['FirstName'], request.form['LastName'], request.form['Address'], request.form['City'], request.form['State'], request.form['Zipcode'], request.form['Telephone'], request.form['Email'], request.form['CreditNumber'], request.form['Preference'], session.get('AccountNumber')	)
 
 			print(sql)
-			print(session.get('AccountNumber'))
-			cur.execute(sql, (request.form['LastName'], request.form['FirstName'], request.form['LastName'], request.form['Address'], request.form['City'], request.form['State'], request.form['Zipcode'], request.form['Telephone'], request.form['Email'], request.form['CreditNumber'], request.form['Preference'], session.get('AccountNumber') ))
-
+			print("DDDD")
+			#cur.execute(sql, (request.form['LastName'], request.form['FirstName'], request.form['Address'], request.form['City'], request.form['State'], request.form['Zipcode'], request.form['Telephone'], request.form['Email'], request.form['CreditNumber'], request.form['Preference'], session.get('AccountNumber') ))
+			cur.execute(sql)
 			print("INSERTION success!")
 			db.commit()
 			flash('You were successfully modify the personal information')
-			return render_template('index.html')
+			return render_template('dashboardUser.html')
 		except:
 			return 'Customer Information Update Fail! Please try again.'
 	return render_template('person_info.html')
@@ -920,7 +924,8 @@ def findBestSeller(__date__):
 
     db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com", "Kocaine", "12344321", "CS539_Proj")
     cur = db.cursor()
-    sql = "select f.FlightNumber, f.origin, f.destination, max(SoldSeat) from Flight f join Remain r using(FlightNumber) where r.Date='%s';"%(__date__)
+    #sql = "select f.FlightNumber, f.origin, f.destination, max(SoldSeat) from Flight f join Remain r using(FlightNumber) where r.Date='%s';"%(__date__)
+    sql = "select FlightNumber, origin , destination, max(SoldSeat) from Remain join Flight using(FlightNumber) where Date='%s' and SoldSeat = (select max(SoldSeat) from Remain where Date='%s');" %(__date__,__date__)
     cur.execute(sql)
     return cur.fetchall()
 
@@ -1514,6 +1519,20 @@ def d10():
 
     return render_template('dashboardAdmin10.html', delayed_list=delayed_list, ontime_list=ontime_list)
 
+
+def transferFlight(__from__, __to__):
+    db = pymysql.connect("kocaine.coua4xtepakf.us-east-2.rds.amazonaws.com", "Kocaine", "12344321", "CS539_Proj")
+    cur = db.cursor()
+
+    sql = "select * from Flight f where f.origin = '%s' and f.destination = '%s';"%(__from__, __to__)
+    cur.execute(sql)
+    result = cur.fetchall()
+    if len(result) == 0:
+        sql = "select * from Flight f1 cross join Flight f2 where f1.origin='%s' and f2.destination='%s' and timediff(f1.destinationTime, f2.originTime)<0;"%(__from__,__to__)
+        cur.execute(sql)
+        return cur.fetchall()
+
+    return []
 
 
 
